@@ -40,6 +40,12 @@ const viewOptions = [
   { id: 'interior_us_viet_45_75', label: 'Nội thất Mỹ-Việt (1945-75)', prompt: `Show a photorealistic interior view of this building. The style is a fusion of American modernism from the 1945-1975 period and traditional Vietnamese/Nguyen Dynasty aesthetics. Incorporate mid-century modern furniture, clean lines, and open spaces, but with Vietnamese elements like carved wooden panels, mother-of-pearl inlay, and local pottery, creating a unique, sophisticated, and culturally syncretic living space.` },
 ];
 
+const DownloadIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+  </svg>
+);
+
 
 const App: React.FC = () => {
   const [uploadedImage, setUploadedImage] = useState<FileWithPreview | null>(null);
@@ -105,6 +111,18 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, [generatedImage]);
+  
+  const handleDownloadClick = useCallback(() => {
+    if (!generatedImage) return;
+
+    const link = document.createElement('a');
+    link.href = generatedImage;
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `ai-architect-vision-${timestamp}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }, [generatedImage]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-sans">
@@ -152,23 +170,34 @@ const App: React.FC = () => {
             />
 
             {generatedImage && !isLoading && !error && (
-              <div className="mt-6 pt-6 border-t border-gray-700">
-                <h3 className="text-md font-semibold mb-4 text-cyan-400">
-                  Khám phá các góc nhìn khác
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {viewOptions.map((view) => (
-                    <button
-                      key={view.id}
-                      onClick={() => handleGenerateViewClick(view.prompt)}
-                      disabled={isLoading}
-                      className="w-full px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 hover:text-white disabled:bg-gray-700/50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-200"
-                    >
-                      {view.label}
-                    </button>
-                  ))}
+              <>
+                <div className="mt-6">
+                  <button
+                    onClick={handleDownloadClick}
+                    className="w-full flex items-center justify-center px-6 py-3 border border-gray-600 text-base font-medium rounded-lg text-gray-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-300"
+                  >
+                    <DownloadIcon className="w-5 h-5 mr-2" />
+                    Tải xuống hình ảnh
+                  </button>
                 </div>
-              </div>
+                <div className="mt-6 pt-6 border-t border-gray-700">
+                  <h3 className="text-md font-semibold mb-4 text-cyan-400">
+                    Khám phá các góc nhìn khác
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {viewOptions.map((view) => (
+                      <button
+                        key={view.id}
+                        onClick={() => handleGenerateViewClick(view.prompt)}
+                        disabled={isLoading}
+                        className="w-full px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 hover:text-white disabled:bg-gray-700/50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-200"
+                      >
+                        {view.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         </div>
