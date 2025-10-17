@@ -8,10 +8,22 @@ import { fileToBase64 } from './utils/fileUtils';
 import type { FileWithPreview } from './types';
 
 const viewOptions = [
+  // Standard Views & Camera Angles
   { id: 'interior', label: 'Nội thất', prompt: 'Show a photorealistic interior view of this building, focusing on a beautifully designed living space that matches the exterior architectural style.' },
-  { id: 'aerial', label: 'Nhìn từ trên cao', prompt: 'Show a photorealistic aerial view (drone shot) of this building, including the roof details and immediate landscape context, maintaining the original architectural style.' },
-  { id: 'night', label: 'Ban đêm', prompt: 'Show a photorealistic view of this building at night. It should be beautifully illuminated, with both interior and exterior lights on, creating a warm and inviting atmosphere.' },
   { id: 'rear', label: 'Mặt sau', prompt: 'Show a photorealistic view of the rear facade of this building, maintaining the same architectural style and level of detail as the front.' },
+  { id: 'frontal', label: 'Chính diện', prompt: 'Render a full frontal view of the building, perfectly centered and symmetrical, showcasing the main entrance and facade details.' },
+  { id: 'left_3_4', label: 'Góc 3/4 trái', prompt: 'Render a 3/4 angle view from the left, showing both the front and side facades to give a sense of depth and volume.' },
+  { id: 'right_3_4', label: 'Góc 3/4 phải', prompt: 'Render a 3/4 angle view from the right, capturing the building\'s depth and relationship with its immediate surroundings.' },
+  { id: 'drone', label: 'Nhìn từ trên cao (Drone)', prompt: 'Show a photorealistic aerial drone view from directly above, highlighting the roof design, layout, and the entire surrounding campus or landscape.' },
+  { id: 'low_angle', label: 'Góc nhìn thấp', prompt: 'Render a low-angle shot looking up at the building to emphasize its height, grandeur, and imposing presence against the sky.' },
+  { id: 'close_up', label: 'Cận cảnh chi tiết', prompt: 'Generate a close-up view focusing on the main entrance and the texture of the facade materials. Highlight the craftsmanship and material details like stone, wood, or metalwork.' },
+  { id: 'framed_view', label: 'Nhìn qua khung cảnh', prompt: 'Render the building as seen through a natural frame, like looking through trees, foliage, or an archway. This should create a sense of discovery and integrate the building with its landscape.' },
+  { id: 'view_from_inside', label: 'Nhìn từ trong ra', prompt: 'Show a view from inside the building or just inside the main gate, looking out towards the garden or street. This should create a feeling of shelter and connection between the interior and exterior.' },
+  { id: 'night_lighting', label: 'Ban đêm (Ánh sáng đẹp)', prompt: 'Show a photorealistic view of this building at night, emphasizing the artificial lighting design. Highlight how spotlights, interior lights, and landscape lighting create a dramatic and inviting atmosphere.' },
+  { id: 'panorama', label: 'Toàn cảnh (Panorama)', prompt: 'Generate a wide, horizontal panoramic view of the building that encompasses its full width and the surrounding environment, showing how it sits within its context.' },
+  
+  // Stylistic & Cultural Transformations
+  { id: 'gothic', label: 'Kiến trúc Gothic', prompt: 'Render this building in a dramatic Gothic architectural style, emphasizing pointed arches, ribbed vaults, flying buttresses, and ornate tracery. Use a dark, moody color palette with dramatic lighting to highlight the intricate details.' },
   { id: 'street_view_hanoi', label: 'Đường phố Hà Nội xưa', prompt: 'Place this building on a bustling street in old Hanoi, Vietnam. The scene should include traditional tube houses, cyclos, and people in ao dai. Maintain the building\'s original architecture but integrate it seamlessly into the historical Vietnamese cityscape with a nostalgic, slightly faded color palette.' },
   { id: 'hoian_riverside', label: 'Bờ sông Hội An', prompt: 'Integrate this building along the riverside of ancient Hoi An, Vietnam. The scene should feature yellow-walled houses, colorful lanterns, and small wooden boats on the river. The lighting should be warm, like late afternoon sun, reflecting the romantic and peaceful atmosphere of the old town.' },
   { id: 'saigon_alley', label: 'Hẻm Sài Gòn xưa', prompt: 'Situate this building within a narrow, vibrant alley of old Saigon. The scene should be full of life, with hanging electrical wires, small street food stalls, and classic motorbikes. The architecture should be adapted to fit into the dense, energetic urban fabric of a historic Vietnamese alley.' },
@@ -25,12 +37,13 @@ const viewOptions = [
   { id: 'hmong_stone_house', label: `Nhà trình tường H'Mông (1800-45)`, prompt: `Reimagine this building as a traditional H'mong house from the 1800-1945 period. It must feature thick, pounded earth walls ('nhà trình tường') and a heavy stone tile roof. Set the house on a high, rocky plateau like the Dong Van Karst Plateau, enclosed by characteristic stone fences. The scene should convey a sense of resilience and harmony with the rugged mountain landscape.` },
   { id: 'central_highlands_communal_house', label: 'Nhà Rông Tây Nguyên (1800-45)', prompt: `Convert this structure into a majestic 'Nhà Rông,' the communal house of the Ba Na or Gia Rai ethnic groups in the Central Highlands (1800-1945). It must have a towering, steeply pitched thatched roof resembling an axe head, supported by a sturdy wooden frame. Place it at the center of a village, with smaller stilt houses around it, embodying the spiritual and social heart of the community.` },
   { id: 'cham_cultural_influence', label: 'Văn hóa Chăm (Trung Kỳ 1800-45)', prompt: `Reimagine the building as a cultural hall or a prominent residence in a Chăm village in coastal Central Vietnam (Trung Kỳ) between 1800-1945. Integrate architectural motifs from Chăm temples, such as terracotta reliefs, boat-shaped roof details, and decorative brickwork, into a period-appropriate structure. The surrounding landscape should be arid, with sand and cacti, and feature villagers in traditional Chăm attire.` },
+  { id: 'interior_us_viet_45_75', label: 'Nội thất Mỹ-Việt (1945-75)', prompt: `Show a photorealistic interior view of this building. The style is a fusion of American modernism from the 1945-1975 period and traditional Vietnamese/Nguyen Dynasty aesthetics. Incorporate mid-century modern furniture, clean lines, and open spaces, but with Vietnamese elements like carved wooden panels, mother-of-pearl inlay, and local pottery, creating a unique, sophisticated, and culturally syncretic living space.` },
 ];
 
 
 const App: React.FC = () => {
   const [uploadedImage, setUploadedImage] = useState<FileWithPreview | null>(null);
-  const [stylePrompt, setStylePrompt] = useState<string>('A modern, minimalist building with large glass windows and a wooden facade.');
+  const [stylePrompt, setStylePrompt] = useState<string>('A grand public building in the Indochine architectural style, blending French colonial elegance with traditional Vietnamese elements. Features include a symmetrical layout, yin-yang tiled roofs, and ornate details. Set in a historic Southeast Asian city context.');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
