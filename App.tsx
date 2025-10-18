@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import Header from './components/Header';
 import ImageUploader from './components/ImageUploader';
@@ -17,6 +18,7 @@ const viewOptions = [
   { id: 'drone', label: 'Nhìn từ trên cao (Drone)', prompt: 'Show a photorealistic aerial drone view from directly above, highlighting the roof design, layout, and the entire surrounding campus or landscape.' },
   { id: 'low_angle', label: 'Góc nhìn thấp', prompt: 'Render a low-angle shot looking up at the building to emphasize its height, grandeur, and imposing presence against the sky.' },
   { id: 'close_up', label: 'Cận cảnh chi tiết', prompt: 'Generate a close-up view focusing on the main entrance and the texture of the facade materials. Highlight the craftsmanship and material details like stone, wood, or metalwork.' },
+  { id: 'seno_console_closeup', label: 'Cận cảnh Sê-nô/Console', prompt: `Generate a detailed close-up of a "sê-nô" or cantilevered console balcony, a characteristic feature of Indochine architecture. Focus on the ornate decorative patterns, the texture of the materials (like plaster, tile, or wrought iron), and how it integrates with the window and wall facade.` },
   { id: 'framed_view', label: 'Nhìn qua khung cảnh', prompt: 'Render the building as seen through a natural frame, like looking through trees, foliage, or an archway. This should create a sense of discovery and integrate the building with its landscape.' },
   { id: 'view_from_inside', label: 'Nhìn từ trong ra', prompt: 'Show a view from inside the building or just inside the main gate, looking out towards the garden or street. This should create a feeling of shelter and connection between the interior and exterior.' },
   { id: 'night_lighting', label: 'Ban đêm (Ánh sáng đẹp)', prompt: 'Show a photorealistic view of this building at night, emphasizing the artificial lighting design. Highlight how spotlights, interior lights, and landscape lighting create a dramatic and inviting atmosphere.' },
@@ -24,9 +26,12 @@ const viewOptions = [
   
   // Stylistic & Cultural Transformations
   { id: 'gothic', label: 'Kiến trúc Gothic', prompt: 'Render this building in a dramatic Gothic architectural style, emphasizing pointed arches, ribbed vaults, flying buttresses, and ornate tracery. Use a dark, moody color palette with dramatic lighting to highlight the intricate details.' },
+  { id: 'cholon_saigon_1824_1946', label: 'Chợ Lớn - Sài Gòn (1824-46)', prompt: `Tái hiện tòa nhà này trong bối cảnh khu phố thương mại sầm uất của Chợ Lớn - Sài Gòn giai đoạn 1824-1946. Kiến trúc là sự pha trộn giữa kiểu nhà phố (shophouse) truyền thống của người Hoa miền Nam và ảnh hưởng kiến trúc Pháp thuộc thời kỳ đầu. Tòa nhà nên có cấu trúc thấp tầng, mái ngói, cửa sổ lá sách bằng gỗ, và tường trát vữa. Đường phố phải sống động với xe kéo, hàng rong, và người dân trong trang phục thời xưa, phản ánh không khí đa văn hóa và nhộn nhịp của trung tâm thương mại Sài Gòn lịch sử.` },
+  { id: 'hanoi_36_streets', label: 'Hà Nội 36 Phố Phường (1828-54)', prompt: `Place this building within the iconic '36 Streets' of Hanoi's Old Quarter, planned between 1828-1954. The architecture should be a mix of traditional Vietnamese 'tube houses' and early French colonial styles, featuring long, narrow facades, tiled roofs, and wooden shutters. The street should be narrow and bustling with pedestrians, cyclos, and street vendors, capturing the dense, historic, and vibrant commercial atmosphere of old Hanoi.` },
   { id: 'street_view_hanoi', label: 'Đường phố Hà Nội xưa', prompt: 'Place this building on a bustling street in old Hanoi, Vietnam. The scene should include traditional tube houses, cyclos, and people in ao dai. Maintain the building\'s original architecture but integrate it seamlessly into the historical Vietnamese cityscape with a nostalgic, slightly faded color palette.' },
   { id: 'hoian_riverside', label: 'Bờ sông Hội An', prompt: 'Integrate this building along the riverside of ancient Hoi An, Vietnam. The scene should feature yellow-walled houses, colorful lanterns, and small wooden boats on the river. The lighting should be warm, like late afternoon sun, reflecting the romantic and peaceful atmosphere of the old town.' },
   { id: 'saigon_alley', label: 'Hẻm Sài Gòn xưa', prompt: 'Situate this building within a narrow, vibrant alley of old Saigon. The scene should be full of life, with hanging electrical wires, small street food stalls, and classic motorbikes. The architecture should be adapted to fit into the dense, energetic urban fabric of a historic Vietnamese alley.' },
+  { id: 'hao_si_phuong_cholon', label: 'Phố Hảo Sĩ Phường (Chợ Lớn)', prompt: `Place this building into the iconic Hao Si Phuong alley in Cho Lon, Ho Chi Minh City. The architecture should reflect the Southern Chinese style brought by Ming Dynasty refugees. Feature the characteristic dense, colorful, and slightly weathered apartment blocks surrounding a central courtyard. The scene should be vibrant and authentic, with details like hanging laundry, intricate ironwork on balconies, and a sense of close-knit community life, evoking the unique historical atmosphere of this well-known Chinese quarter.` },
   { id: 'sapa_market', label: 'Chợ phiên Sapa', prompt: `Place this building in a vibrant Sapa market scene. The surroundings should be filled with H'Mong and Dao ethnic people dressed in their intricate, colorful traditional clothing. In the background, show the iconic terraced rice paddies of the northern Vietnamese mountains. The overall mood should be lively and culturally rich.` },
   { id: 'mekong_floating_market', label: 'Chợ nổi miền Tây', prompt: `Integrate this building onto the riverbank of a bustling Mekong Delta floating market. The scene should be crowded with wooden boats selling fruits and vegetables. People should be wearing traditional 'Áo Bà Ba' and conical hats ('Nón Lá'). The atmosphere should feel sunny, tropical, and full of life.` },
   { id: 'hue_imperial', label: 'Cố đô Huế', prompt: `Situate this building within the serene and elegant context of the Hue Imperial City. The scene should include Vietnamese people dressed in traditional, formal 'Áo Dài', walking through gardens or courtyards typical of the ancient capital. The architecture should blend respectfully with the historical and royal ambiance of Hue.` },
@@ -40,16 +45,10 @@ const viewOptions = [
   { id: 'interior_us_viet_45_75', label: 'Nội thất Mỹ-Việt (1945-75)', prompt: `Show a photorealistic interior view of this building. The style is a fusion of American modernism from the 1945-1975 period and traditional Vietnamese/Nguyen Dynasty aesthetics. Incorporate mid-century modern furniture, clean lines, and open spaces, but with Vietnamese elements like carved wooden panels, mother-of-pearl inlay, and local pottery, creating a unique, sophisticated, and culturally syncretic living space.` },
 ];
 
-const DownloadIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-  </svg>
-);
-
 
 const App: React.FC = () => {
   const [uploadedImage, setUploadedImage] = useState<FileWithPreview | null>(null);
-  const [stylePrompt, setStylePrompt] = useState<string>('A grand public building in the Indochine architectural style, blending French colonial elegance with traditional Vietnamese elements. Features include a symmetrical layout, yin-yang tiled roofs, and ornate details. Set in a historic Southeast Asian city context.');
+  const [stylePrompt, setStylePrompt] = useState<string>("Tái hiện tòa nhà này trong bối cảnh khu phố thương mại sầm uất của Chợ Lớn - Sài Gòn giai đoạn 1824-1946. Kiến trúc là sự pha trộn giữa kiểu nhà phố (shophouse) truyền thống của người Hoa miền Nam và ảnh hưởng kiến trúc Pháp thuộc thời kỳ đầu. Tòa nhà nên có cấu trúc thấp tầng, mái ngói, cửa sổ lá sách bằng gỗ, và tường trát vữa. Đường phố phải sống động với xe kéo, hàng rong, và người dân trong trang phục thời xưa, phản ánh không khí đa văn hóa và nhộn nhịp của trung tâm thương mại Sài Gòn lịch sử.");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,18 +110,6 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, [generatedImage]);
-  
-  const handleDownloadClick = useCallback(() => {
-    if (!generatedImage) return;
-
-    const link = document.createElement('a');
-    link.href = generatedImage;
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    link.download = `ai-architect-vision-${timestamp}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, [generatedImage]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-sans">
@@ -170,34 +157,23 @@ const App: React.FC = () => {
             />
 
             {generatedImage && !isLoading && !error && (
-              <>
-                <div className="mt-6">
-                  <button
-                    onClick={handleDownloadClick}
-                    className="w-full flex items-center justify-center px-6 py-3 border border-gray-600 text-base font-medium rounded-lg text-gray-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-300"
-                  >
-                    <DownloadIcon className="w-5 h-5 mr-2" />
-                    Tải xuống hình ảnh
-                  </button>
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <h3 className="text-md font-semibold mb-4 text-cyan-400">
+                  Khám phá các góc nhìn khác
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {viewOptions.map((view) => (
+                    <button
+                      key={view.id}
+                      onClick={() => handleGenerateViewClick(view.prompt)}
+                      disabled={isLoading}
+                      className="w-full px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 hover:text-white disabled:bg-gray-700/50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-200"
+                    >
+                      {view.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="mt-6 pt-6 border-t border-gray-700">
-                  <h3 className="text-md font-semibold mb-4 text-cyan-400">
-                    Khám phá các góc nhìn khác
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {viewOptions.map((view) => (
-                      <button
-                        key={view.id}
-                        onClick={() => handleGenerateViewClick(view.prompt)}
-                        disabled={isLoading}
-                        className="w-full px-4 py-2 border border-gray-600 text-sm font-medium rounded-md text-gray-300 bg-gray-700 hover:bg-gray-600 hover:text-white disabled:bg-gray-700/50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500 transition-all duration-200"
-                      >
-                        {view.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
+              </div>
             )}
           </div>
         </div>
